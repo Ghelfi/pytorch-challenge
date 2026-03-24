@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PyTorch Challenge</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 20px;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: white;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      backdrop-filter: blur(10px);
+    }
+    h1 {
+      color: #ee4c2c;
+      margin-bottom: 16px;
+      font-size: 28px;
+    }
+    h2 {
+      color: #ee4c2c;
+      margin-bottom: 16px;
+      font-size: 22px;
+    }
+    p {
+      margin-bottom: 16px;
+      line-height: 1.6;
+      color: #e0e0e0;
+    }
+    button {
+      background: #ee4c2c;
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 12px;
+      transition: background 0.2s, transform 0.1s;
+    }
+    button:hover {
+      background: #ff6f3c;
+      transform: translateY(-1px);
+    }
+    button:active {
+      transform: translateY(0);
+    }
+    button:disabled {
+      background: #555;
+      cursor: not-allowed;
+      transform: none;
+    }
+    input[type="number"] {
+      width: 100%;
+      padding: 14px;
+      border-radius: 8px;
+      border: 2px solid transparent;
+      font-size: 16px;
+      margin-top: 8px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #333;
+      transition: border-color 0.2s;
+    }
+    input:focus {
+      outline: none;
+      border-color: #ee4c2c;
+    }
+    .option {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 14px 16px;
+      border-radius: 8px;
+      margin: 10px 0;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .option:hover {
+      border-color: #ee4c2c;
+      background: rgba(255, 255, 255, 0.15);
+    }
+    .option.selected {
+      border-color: #ee4c2c;
+      background: rgba(238, 76, 44, 0.2);
+    }
+    .hidden {
+      display: none;
+    }
+    .code-block {
+      background: #0d1117;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      margin: 16px 0;
+      border: 1px solid #30363d;
+    }
+    .code-block .keyword { color: #ff7b72; }
+    .code-block .function { color: #d2a8ff; }
+    .code-block .decorator { color: #79c0ff; }
+    .code-block .number { color: #79c0ff; }
+    .hint {
+      background: rgba(238, 76, 44, 0.1);
+      border-left: 4px solid #ee4c2c;
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+    .progress {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .progress-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+    }
+    .progress-dot.active { background: #ee4c2c; }
+    .progress-dot.completed { background: #51cf66; }
+    .logo {
+      font-size: 48px;
+      margin-bottom: 8px;
+    }
+    .loading-screen {
+      text-align: center;
+      padding: 60px 20px;
+    }
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255, 255, 255, 0.1);
+      border-top-color: #ee4c2c;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .user-code-display {
+      background: linear-gradient(135deg, #ee4c2c 0%, #ff6f3c 100%);
+      padding: 24px;
+      border-radius: 12px;
+      text-align: center;
+      margin: 20px 0;
+    }
+    .user-code-label {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.9;
+      margin-bottom: 8px;
+    }
+    .user-code {
+      font-family: 'Courier New', monospace;
+      font-size: 36px;
+      font-weight: bold;
+      letter-spacing: 4px;
+    }
+    .booth-cta {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      margin-top: 20px;
+      border: 2px dashed rgba(255, 255, 255, 0.3);
+    }
+    .booth-cta h3 {
+      margin-bottom: 8px;
+      font-size: 18px;
+      color: #ee4c2c;
+    }
+    .booth-cta p {
+      margin-bottom: 0;
+      font-size: 14px;
+    }
+    .btn-loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    .error-details {
+      background: rgba(0,0,0,0.3);
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 12px;
+      font-family: monospace;
+      font-size: 12px;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Screen: Loading -->
+  <div id="screen-loading" class="card loading-screen">
+    <div class="loading-spinner"></div>
+    <p>Loading challenge...</p>
+  </div>
+
+  <!-- Screen: Welcome -->
+  <div id="screen-welcome" class="card hidden">
+    <div class="logo">🔥</div>
+    <h1>PyTorch Challenge</h1>
+    <p>Test your PyTorch knowledge and compete for the top spot on our leaderboard!</p>
+    <p><strong>2 questions</strong> • Takes ~1 minute</p>
+    <button onclick="startGame()">Start Challenge →</button>
+  </div>
+
+  <!-- Screen: Trivia Question -->
+  <div id="screen-trivia" class="card hidden">
+    <div class="progress">
+      <div class="progress-dot active"></div>
+      <div class="progress-dot"></div>
+    </div>
+    <h2>Question 1 of 2</h2>
+    <p><strong>What function is used to prevent gradient computation in PyTorch?</strong></p>
+    
+    <div class="option" onclick="selectTrivia(this, 'a')">
+      <code>torch.no_backward()</code>
+    </div>
+    <div class="option" onclick="selectTrivia(this, 'b')">
+      <code>torch.no_grad()</code>
+    </div>
+    <div class="option" onclick="selectTrivia(this, 'c')">
+      <code>torch.stop_gradient()</code>
+    </div>
+    <div class="option" onclick="selectTrivia(this, 'd')">
+      <code>torch.freeze()</code>
+    </div>
+    
+    <button onclick="submitTrivia()" id="btn-trivia" disabled>Next →</button>
+  </div>
+
+  <!-- Screen: Count Question -->
+  <div id="screen-count" class="card hidden">
+    <div class="progress">
+      <div class="progress-dot completed"></div>
+      <div class="progress-dot active"></div>
+    </div>
+    <h2>Question 2 of 2</h2>
+    <p><strong>How many times does <code>torch.compile</code> trigger a recompilation in this code?</strong></p>
+    
+    <div class="hint">
+      💡 Check the poster at our booth for hints!
+    </div>
+    
+    <div class="code-block">
+      <span class="decorator">@torch.compile</span><br>
+      <span class="keyword">def</span> <span class="function">fn</span>(x, n):<br>
+      &nbsp;&nbsp;<span class="keyword">if</span> n > <span class="number">10</span>:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> x * <span class="number">2</span><br>
+      &nbsp;&nbsp;<span class="keyword">return</span> x + <span class="number">1</span><br>
+      <br>
+      <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(<span class="number">20</span>):<br>
+      &nbsp;&nbsp;<span class="function">fn</span>(torch.<span class="function">randn</span>(<span class="number">4</span>), i)
+    </div>
+    
+    <input 
+      type="number" 
+      id="count-answer" 
+      placeholder="Enter your guess"
+      min="0"
+      max="1000"
+    >
+    <button onclick="submitGame()" id="btn-submit">Submit Answer</button>
+  </div>
+
+  <!-- Screen: Success -->
+  <div id="screen-success" class="card hidden">
+    <div class="progress">
+      <div class="progress-dot completed"></div>
+      <div class="progress-dot completed"></div>
+    </div>
+    <h2>🎉 Submitted!</h2>
+    <p>Your answer has been recorded!</p>
+    
+    <div class="user-code-display">
+      <div class="user-code-label">Your Code</div>
+      <div class="user-code" id="success-user-code">---</div>
+    </div>
+    
+    <div class="booth-cta">
+      <h3>📍 Come to Our Booth!</h3>
+      <p>Show this code to register your name on the leaderboard and claim your reward!</p>
+    </div>
+    
+    <button onclick="window.location.href='leaderboard.html'">View Leaderboard 📊</button>
+  </div>
+
+  <!-- Screen: Error -->
+  <div id="screen-error" class="card hidden">
+    <h2>⚠️ Oops!</h2>
+    <p id="error-message">Something went wrong.</p>
+    <div id="error-details" class="error-details hidden"></div>
+    <button onclick="window.location.reload()">Try Again</button>
+    <button onclick="window.location.href='leaderboard.html'" style="background: transparent; border: 2px solid #ee4c2c; margin-top: 8px;">
+      View Leaderboard
+    </button>
+  </div>
+
+  <!-- Screen: Already Played -->
+  <div id="screen-played" class="card hidden">
+    <h2>🎮 Already Participated!</h2>
+    <p>You've already taken the challenge on this device.</p>
+    
+    <div class="user-code-display">
+      <div class="user-code-label">Your Code</div>
+      <div class="user-code" id="played-user-code">---</div>
+    </div>
+    
+    <div class="booth-cta">
+      <h3>📍 Come to Our Booth!</h3>
+      <p>Show this code to register your name on the leaderboard and claim your reward!</p>
+    </div>
+    
+    <button onclick="window.location.href='leaderboard.html'">View Leaderboard 📊</button>
+  </div>
+
+  <!-- Config file (create separately and gitignore) -->
+  <script src="config.js"></script>
+  
+  <script>
+    const API_URL = window.API_URL;
+    
+    if (!API_URL) {
+      console.error('CONFIG.API_URL not set! Create config.js file.');
+    }
+
+    // Generate device ID
+    function getDeviceId() {
+      let id = localStorage.getItem('pytorch_challenge_device_id');
+      if (!id) {
+        id = 'dev_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now().toString(36);
+        localStorage.setItem('pytorch_challenge_device_id', id);
+      }
+      return id;
+    }
+
+    // Generate user code (e.g., "PYT-7X3K")
+    function generateUserCode() {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let code = 'PYT-';
+      for (let i = 0; i < 4; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return code;
+    }
+
+    // State
+    let triviaAnswer = null;
+    let triviaCorrect = false;
+    let userCode = '';
+
+    // Show screen
+    function showScreen(screenId) {
+      document.querySelectorAll('.card').forEach(card => card.classList.add('hidden'));
+      document.getElementById(screenId).classList.remove('hidden');
+      window.scrollTo(0, 0);
+    }
+
+    // Check participation
+    async function checkParticipation() {
+      if (!API_URL) {
+        showScreen('screen-error');
+        document.getElementById('error-message').textContent = 'Configuration error: API URL not set.';
+        return;
+      }
+
+      const deviceId = getDeviceId();
+      
+      try {
+        const response = await fetch(`${API_URL}?action=check&device_id=${encodeURIComponent(deviceId)}`);
+        const result = await response.json();
+        
+        if (result.participated) {
+          document.getElementById('played-user-code').textContent = result.user_code || '???';
+          showScreen('screen-played');
+        } else {
+          showScreen('screen-welcome');
+        }
+      } catch (error) {
+        console.error('Check error:', error);
+        showScreen('screen-welcome');
+      }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      checkParticipation();
+      
+      document.getElementById('count-answer').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') submitGame();
+      });
+    });
+
+    // Start game
+    function startGame() {
+      userCode = generateUserCode();
+      showScreen('screen-trivia');
+    }
+
+    // Select trivia
+    function selectTrivia(element, answer) {
+      document.querySelectorAll('#screen-trivia .option').forEach(opt => opt.classList.remove('selected'));
+      element.classList.add('selected');
+      triviaAnswer = answer;
+      document.getElementById('btn-trivia').disabled = false;
+    }
+
+    // Submit trivia
+    function submitTrivia() {
+      if (!triviaAnswer) return;
+      triviaCorrect = (triviaAnswer === 'b');
+      showScreen('screen-count');
+      document.getElementById('count-answer').focus();
+    }
+
+    // Submit game
+    async function submitGame() {
+      const countInput = document.getElementById('count-answer');
+      const countAnswer = parseInt(countInput.value);
+      const submitBtn = document.getElementById('btn-submit');
+      
+      if (isNaN(countAnswer) || countAnswer < 0) {
+        alert('Please enter a valid number (0 or greater)');
+        countInput.focus();
+        return;
+      }
+      
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="btn-loading"></span>Submitting...';
+      
+      const payload = {
+        device_id: getDeviceId(),
+        user_code: userCode,
+        trivia_correct: triviaCorrect,
+        count_answer: countAnswer
+      };
+      
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain',
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+        
+        if (result.error) {
+          if (result.error === 'Already participated') {
+            document.getElementById('played-user-code').textContent = result.user_code || userCode;
+            showScreen('screen-played');
+          } else if (result.error === 'Code collision, please retry') {
+            userCode = generateUserCode();
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Submit Answer';
+            submitGame();
+          } else {
+            document.getElementById('error-message').textContent = result.error;
+            if (result.received) {
+              document.getElementById('error-details').textContent = 'Received fields: ' + result.received.join(', ');
+              document.getElementById('error-details').classList.remove('hidden');
+            }
+            showScreen('screen-error');
+          }
+        } else {
+          document.getElementById('success-user-code').textContent = result.user_code;
+          showScreen('screen-success');
+        }
+        
+      } catch (error) {
+        console.error('Submit error:', error);
+        document.getElementById('error-message').textContent = 
+          'Could not submit your answer. Please check your connection and try again.';
+        document.getElementById('error-details').textContent = error.toString();
+        document.getElementById('error-details').classList.remove('hidden');
+        showScreen('screen-error');
+        
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Submit Answer';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leaderboard - PyTorch Challenge</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 20px;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: white;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    h1 {
+      color: #ee4c2c;
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: #888;
+      font-size: 14px;
+    }
+    .refresh-info {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: #666;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      background: #51cf66;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(10px);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th {
+      color: #ee4c2c;
+      text-align: left;
+      padding: 12px 8px;
+      border-bottom: 2px solid #ee4c2c;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    td {
+      padding: 16px 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      vertical-align: middle;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    tr:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .rank {
+      font-weight: bold;
+      font-size: 18px;
+      width: 50px;
+    }
+    .rank-1 { color: #ffd700; }
+    .rank-2 { color: #c0c0c0; }
+    .rank-3 { color: #cd7f32; }
+    .medal {
+      font-size: 24px;
+      margin-right: 4px;
+    }
+    .player-name {
+      font-weight: 500;
+      font-size: 16px;
+    }
+    .player-code {
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      color: #79c0ff;
+      background: rgba(121, 192, 255, 0.1);
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+    .trivia-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .trivia-correct {
+      background: rgba(81, 207, 102, 0.2);
+      color: #51cf66;
+    }
+    .trivia-wrong {
+      background: rgba(255, 107, 107, 0.2);
+      color: #ff6b6b;
+    }
+    .guess {
+      font-family: 'Courier New', monospace;
+      font-size: 16px;
+      font-weight: bold;
+      color: #ee4c2c;
+    }
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #888;
+    }
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top-color: #ee4c2c;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #888;
+    }
+    .empty-state .icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    .error-state {
+      text-align: center;
+      padding: 40px;
+      color: #ff6b6b;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 24px;
+      color: #ee4c2c;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    .stats {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 32px;
+      font-weight: bold;
+      color: #ee4c2c;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .last-updated {
+      text-align: center;
+      color: #666;
+      font-size: 12px;
+      margin-top: 16px;
+    }
+    @media (max-width: 500px) {
+      .stats { flex-direction: column; gap: 12px; }
+      th, td { padding: 12px 4px; font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>🏆 Leaderboard</h1>
+    <p class="subtitle">PyTorch Challenge Rankings</p>
+    <div class="refresh-info">
+      <span class="live-dot"></span>
+      <span>Auto-refreshes every 30 seconds</span>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-value" id="total-players">-</div>
+      <div class="stat-label">Players</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="trivia-rate">-</div>
+      <div class="stat-label">Trivia Accuracy</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div id="leaderboard-loading" class="loading">
+      <div class="loading-spinner"></div>
+      <p>Loading leaderboard...</p>
+    </div>
+
+    <div id="leaderboard-empty" class="empty-state" style="display: none;">
+      <div class="icon">🎮</div>
+      <p>No submissions yet. Be the first!</p>
+    </div>
+
+    <div id="leaderboard-error" class="error-state" style="display: none;">
+      <p>Could not load leaderboard.</p>
+      <button onclick="loadLeaderboard()" style="margin-top: 12px; padding: 8px 16px; background: #ee4c2c; color: white; border: none; border-radius: 8px; cursor: pointer;">
+        Retry
+      </button>
+    </div>
+
+    <table id="leaderboard-table" style="display: none;">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Player</th>
+          <th>Trivia</th>
+          <th>Guess</th>
+        </tr>
+      </thead>
+      <tbody id="leaderboard-body"></tbody>
+    </table>
+  </div>
+
+  <p class="last-updated">Last updated: <span id="last-updated">-</span></p>
+
+  <center>
+    <a href="index.html" class="back-link">← Take the Challenge</a>
+  </center>
+
+  <script src="config.js"></script>
+  
+  <script>
+    const API_URL = window.API_URL;
+    const REFRESH_INTERVAL = 30000;
+
+    function getMedal(rank) {
+      switch(rank) {
+        case 1: return '🥇';
+        case 2: return '🥈';
+        case 3: return '🥉';
+        default: return '';
+      }
+    }
+
+    function formatTime(date) {
+      return date.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        second: '2-digit'
+      });
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    async function loadLeaderboard() {
+      const loadingEl = document.getElementById('leaderboard-loading');
+      const emptyEl = document.getElementById('leaderboard-empty');
+      const errorEl = document.getElementById('leaderboard-error');
+      const tableEl = document.getElementById('leaderboard-table');
+      const bodyEl = document.getElementById('leaderboard-body');
+
+      if (!API_URL) {
+        loadingEl.style.display = 'none';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      try {
+        const response = await fetch(API_URL);
+        
+        if (!response.ok) throw new Error('Network error');
+        
+        const data = await response.json();
+
+        loadingEl.style.display = 'none';
+        errorEl.style.display = 'none';
+
+        if (!data || data.length === 0) {
+          emptyEl.style.display = 'block';
+          tableEl.style.display = 'none';
+          document.getElementById('total-players').textContent = '0';
+          document.getElementById('trivia-rate').textContent = '0%';
+          return;
+        }
+
+        // Stats
+        document.getElementById('total-players').textContent = data.length;
+        const triviaCorrect = data.filter(e => e.trivia === 1).length;
+        const triviaRate = Math.round((triviaCorrect / data.length) * 100);
+        document.getElementById('trivia-rate').textContent = triviaRate + '%';
+
+        // Table
+        emptyEl.style.display = 'none';
+        tableEl.style.display = 'table';
+
+        bodyEl.innerHTML = data.map((entry, index) => {
+          const rank = entry.rank || (index + 1);
+          const medal = getMedal(rank);
+          const rankClass = rank <= 3 ? `rank-${rank}` : '';
+          
+          // Show name if available, otherwise show code
+          const playerDisplay = entry.name 
+            ? `<span class="player-name">${escapeHtml(entry.name)}</span>`
+            : `<span class="player-code">${escapeHtml(entry.user_code)}</span>`;
+          
+          return `
+            <tr>
+              <td class="rank ${rankClass}">
+                ${medal ? `<span class="medal">${medal}</span>` : rank}
+              </td>
+              <td>${playerDisplay}</td>
+              <td>
+                <span class="trivia-badge ${entry.trivia ? 'trivia-correct' : 'trivia-wrong'}">
+                  ${entry.trivia ? '✓' : '✗'}
+                </span>
+              </td>
+              <td class="guess">${entry.guess}</td>
+            </tr>
+          `;
+        }).join('');
+
+        document.getElementById('last-updated').textContent = formatTime(new Date());
+
+      } catch (error) {
+        console.error('Leaderboard error:', error);
+        loadingEl.style.display = 'none';
+        errorEl.style.display = 'block';
+        tableEl.style.display = 'none';
+      }
+    }
+
+    loadLeaderboard();
+    setInterval(loadLeaderboard, REFRESH_INTERVAL);
+
+    document.addEventListener('visibilitychange', function() {
+      if (!document.hidden) loadLeaderboard();
+    });
+  </script>
+</body>
+</html>
