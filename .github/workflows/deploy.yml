@@ -25,6 +25,7 @@ jobs:
       - name: Inject config
         run: |
           echo "window.API_URL = '${{ secrets.APPS_SCRIPT_URL }}';" > config.js
+          echo "window.API_TOKEN = '${{ secrets.SHARED_TOKEN }}';" >> config.js
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
