@@ -230,7 +230,7 @@
   <!-- Screen: Welcome -->
   <div id="screen-welcome" class="card hidden">
     <div class="logo">🔥</div>
-    <h1>PyTorch Challenge</h1>
+    <h1>Helsing PyTorch Challenge</h1>
     <p>Test your PyTorch knowledge and compete for the top spot on our leaderboard!</p>
     <p><strong>2 questions</strong> • Takes ~1 minute</p>
     <button onclick="startGame()">Start Challenge →</button>
@@ -275,9 +275,9 @@
       cfg.cache_size_limit = <span class="number">64</span><br>
       <br>
       <span class="keyword">class</span> <span class="function">Clf</span>(nn.Module):<br>
-      &nbsp;&nbsp;<span class="keyword">def</span> <span class="function">__init__</span>(self, D, C):<br>
+      &nbsp;&nbsp;<span class="keyword">def</span> <span class="function">__init__</span>(self, n_dim, n_chan):<br>
       &nbsp;&nbsp;&nbsp;&nbsp;<span class="function">super</span>().__init__()<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;self.fc = nn.<span class="function">Linear</span>(D, C)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;self.fc = nn.<span class="function">Linear</span>(n_dim, n_chan)<br>
       <br>
       &nbsp;&nbsp;<span class="keyword">def</span> <span class="function">forward</span>(self, feats):<br>
       &nbsp;&nbsp;&nbsp;&nbsp;pooled = feats.<span class="function">mean</span>(dim=<span class="number">0</span>)<br>
@@ -320,7 +320,7 @@
     </div>
     
     <div class="booth-cta">
-      <h3>📍 Come to Our Booth!</h3>
+      <h3>📍 Come to Helsing Booth!</h3>
       <p>Show this code to register your name on the leaderboard and claim your reward!</p>
     </div>
     
@@ -349,7 +349,7 @@
     </div>
     
     <div class="booth-cta">
-      <h3>📍 Come to Our Booth!</h3>
+      <h3>📍 Come to Helsing Booth!</h3>
       <p>Show this code to register your name on the leaderboard and claim your reward!</p>
     </div>
     
