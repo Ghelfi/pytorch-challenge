@@ -295,15 +295,18 @@
 
       try {
         const response = await fetch(API_URL);
-        
-        if (!response.ok) throw new Error('Network error');
-        
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
         const data = await response.json();
+
+        // GAS returned a server-side error object
+        if (data && data.error) throw new Error(data.error);
 
         loadingEl.style.display = 'none';
         errorEl.style.display = 'none';
 
-        if (!data || data.length === 0) {
+        if (!Array.isArray(data) || data.length === 0) {
           emptyEl.style.display = 'block';
           tableEl.style.display = 'none';
           document.getElementById('total-players').textContent = '0';
@@ -349,6 +352,8 @@
         console.error('Leaderboard error:', error);
         loadingEl.style.display = 'none';
         errorEl.style.display = 'block';
+        errorEl.querySelector('p').textContent =
+          'Could not load leaderboard: ' + error.message;
         tableEl.style.display = 'none';
       }
     }
