@@ -265,21 +265,25 @@
       <div class="progress-dot active"></div>
     </div>
     <h2>Question 2 of 2</h2>
-    <p><strong>How many times does <code>torch.compile</code> trigger a recompilation in this code?</strong></p>
-    
-    <div class="hint">
-      💡 Check the poster at our booth for hints!
-    </div>
-    
+    <p><strong>How many times does <code>torch.compile</code> recompile?</strong></p>
+
     <div class="code-block">
-      <span class="decorator">@torch.compile</span><br>
-      <span class="keyword">def</span> <span class="function">fn</span>(x, n):<br>
-      &nbsp;&nbsp;<span class="keyword">if</span> n > <span class="number">10</span>:<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> x * <span class="number">2</span><br>
-      &nbsp;&nbsp;<span class="keyword">return</span> x + <span class="number">1</span><br>
+      torch._dynamo.config.cache_size_limit = <span class="number">64</span><br>
       <br>
-      <span class="keyword">for</span> i <span class="keyword">in</span> <span class="function">range</span>(<span class="number">20</span>):<br>
-      &nbsp;&nbsp;<span class="function">fn</span>(torch.<span class="function">randn</span>(<span class="number">4</span>), i)
+      <span class="keyword">class</span> <span class="function">Classifier</span>(nn.Module):<br>
+      &nbsp;&nbsp;<span class="keyword">def</span> <span class="function">__init__</span>(self, d_model, num_classes):<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="function">super</span>().__init__()<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;self.classifier = nn.<span class="function">Linear</span>(d_model, num_classes)<br>
+      <br>
+      &nbsp;&nbsp;<span class="keyword">def</span> <span class="function">forward</span>(self, token_features):<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;pooled = token_features.<span class="function">mean</span>(dim=<span class="number">0</span>)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> self.<span class="function">classifier</span>(pooled)<br>
+      <br>
+      model = torch.<span class="function">compile</span>(<span class="function">Classifier</span>(<span class="number">256</span>, <span class="number">10</span>))<br>
+      <br>
+      <span class="keyword">for</span> seq_len <span class="keyword">in</span> <span class="function">range</span>(<span class="number">1</span>, <span class="number">33</span>):<br>
+      &nbsp;&nbsp;x = torch.<span class="function">randn</span>(seq_len, <span class="number">256</span>)<br>
+      &nbsp;&nbsp;<span class="function">model</span>(x)
     </div>
     
     <input 

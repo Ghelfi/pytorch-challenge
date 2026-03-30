@@ -106,26 +106,15 @@
       padding: 4px 8px;
       border-radius: 4px;
     }
-    .trivia-badge {
-      display: inline-block;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-    .trivia-correct {
-      background: rgba(81, 207, 102, 0.2);
-      color: #51cf66;
-    }
-    .trivia-wrong {
-      background: rgba(255, 107, 107, 0.2);
-      color: #ff6b6b;
-    }
-    .guess {
+    .score {
       font-family: 'Courier New', monospace;
-      font-size: 16px;
+      font-size: 18px;
       font-weight: bold;
       color: #ee4c2c;
+      text-align: right;
+    }
+    th.score-col {
+      text-align: right;
     }
     .loading {
       text-align: center;
@@ -248,8 +237,7 @@
         <tr>
           <th>Rank</th>
           <th>Player</th>
-          <th>Trivia</th>
-          <th>Guess</th>
+          <th class="score-col">Score</th>
         </tr>
       </thead>
       <tbody id="leaderboard-body"></tbody>
@@ -337,24 +325,20 @@
           const rank = entry.rank || (index + 1);
           const medal = getMedal(rank);
           const rankClass = rank <= 3 ? `rank-${rank}` : '';
-          
-          // Show name if available, otherwise show code
-          const playerDisplay = entry.name 
+
+          const playerDisplay = entry.name
             ? `<span class="player-name">${escapeHtml(entry.name)}</span>`
             : `<span class="player-code">${escapeHtml(entry.user_code)}</span>`;
-          
+
+          const scoreDisplay = parseFloat(entry.score.toFixed(2));
+
           return `
             <tr>
               <td class="rank ${rankClass}">
                 ${medal ? `<span class="medal">${medal}</span>` : rank}
               </td>
               <td>${playerDisplay}</td>
-              <td>
-                <span class="trivia-badge ${entry.trivia ? 'trivia-correct' : 'trivia-wrong'}">
-                  ${entry.trivia ? '✓' : '✗'}
-                </span>
-              </td>
-              <td class="guess">${entry.guess}</td>
+              <td class="score">${scoreDisplay}</td>
             </tr>
           `;
         }).join('');
