@@ -286,9 +286,13 @@
       model = torch.<span class="function">compile</span>(<br>
       &nbsp;&nbsp;<span class="function">Clf</span>(<span class="number">256</span>, <span class="number">10</span>))<br>
       <br>
-      <span class="keyword">for</span> seq_len <span class="keyword">in</span> <span class="function">range</span>(<span class="number">1</span>, <span class="number">33</span>):<br>
-      &nbsp;&nbsp;x = torch.<span class="function">randn</span>(seq_len, <span class="number">256</span>)<br>
-      &nbsp;&nbsp;<span class="function">model</span>(x)
+      N = <span class="number">32</span><br>
+      data = torch.<span class="function">randn</span>(N, <span class="number">256</span>)<br>
+      out = []<br>
+      <br>
+      <span class="keyword">for</span> seq_len <span class="keyword">in</span> <span class="function">range</span>(<span class="number">1</span>, N + <span class="number">1</span>):<br>
+      &nbsp;&nbsp;x = data[:seq_len]<br>
+      &nbsp;&nbsp;out.<span class="function">append</span>(<span class="function">model</span>(x))
     </div>
     
     <input 
