@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PyTorch Challenge – Live Leaderboard</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(160deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* ── QR Section ─────────────────────────────────────────── */
+    .qr-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 20px 16px;
+      border-bottom: 2px solid rgba(238, 76, 44, 0.4);
+      flex-shrink: 0;
+    }
+
+    .event-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #ee4c2c;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .qr-row {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .qr-frame {
+      background: white;
+      padding: 10px;
+      border-radius: 12px;
+      flex-shrink: 0;
+    }
+
+    .qr-frame img {
+      display: block;
+      width: 130px;
+      height: 130px;
+    }
+
+    .qr-cta {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .cta-headline {
+      font-size: 26px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .cta-sub {
+      font-size: 15px;
+      color: #aaa;
+      line-height: 1.4;
+    }
+
+    .cta-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(238, 76, 44, 0.2);
+      border: 1px solid #ee4c2c;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #ee4c2c;
+      width: fit-content;
+    }
+
+    /* ── Leaderboard Section ─────────────────────────────────── */
+    .leaderboard-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      padding: 0 20px 16px;
+    }
+
+    .lb-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0 12px;
+      flex-shrink: 0;
+    }
+
+    .lb-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #ee4c2c;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #51cf66;
+      font-weight: 500;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      background: #51cf66;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(81, 207, 102, 0.4); }
+      50%       { opacity: 0.7; box-shadow: 0 0 0 5px rgba(81, 207, 102, 0); }
+    }
+
+    /* Stats bar */
+    .stats-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-shrink: 0;
+    }
+
+    .stat-chip {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 8px 16px;
+      text-align: center;
+      flex: 1;
+    }
+
+    .stat-chip .val {
+      font-size: 22px;
+      font-weight: 800;
+      color: #ee4c2c;
+    }
+
+    .stat-chip .lbl {
+      font-size: 11px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Table */
+    .table-wrap {
+      flex: 1;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    thead th {
+      color: #ee4c2c;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(238, 76, 44, 0.3);
+      position: sticky;
+      top: 0;
+      background: rgba(26, 26, 46, 0.95);
+    }
+
+    thead th:last-child { text-align: right; }
+
+    tbody tr {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      transition: background 0.15s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:nth-child(odd) { background: rgba(255, 255, 255, 0.02); }
+
+    td {
+      padding: 13px 16px;
+      vertical-align: middle;
+    }
+
+    .rank-col { width: 60px; }
+    .score-col { width: 90px; text-align: right; }
+
+    .rank {
+      font-size: 20px;
+      font-weight: 800;
+    }
+    .rank-1 { color: #ffd700; }
+    .rank-2 { color: #c0c0c0; }
+    .rank-3 { color: #cd7f32; }
+
+    .medal { font-size: 22px; }
+
+    .player-name {
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    .player-code {
+      font-family: 'Courier New', monospace;
+      font-size: 15px;
+      color: #79c0ff;
+      background: rgba(121, 192, 255, 0.1);
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    .score {
+      font-family: 'Courier New', monospace;
+      font-size: 20px;
+      font-weight: 800;
+      color: #ee4c2c;
+    }
+
+    /* States */
+    .state-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #888;
+      gap: 12px;
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top-color: #ee4c2c;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .last-updated {
+      text-align: center;
+      color: #555;
+      font-size: 11px;
+      margin-top: 8px;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- QR / CTA Section -->
+  <div class="qr-section">
+    <div class="event-title">Helsing PyTorch Challenge</div>
+    <div class="qr-row">
+      <div class="qr-frame">
+        <img src="qr-code.png" alt="QR Code to join the challenge">
+      </div>
+      <div class="qr-cta">
+        <div class="cta-headline">Scan &amp;<br>Compete!</div>
+        <div class="cta-sub">Test your PyTorch knowledge<br>and climb the leaderboard</div>
+        <div class="cta-badge">
+          <span>🔥</span> ~1 minute challenge
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaderboard Section -->
+  <div class="leaderboard-section">
+    <div class="lb-header">
+      <div class="lb-title">🏆 Live Leaderboard</div>
+      <div class="live-badge">
+        <div class="live-dot"></div>
+        <span>Updates every 30s</span>
+      </div>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-chip">
+        <div class="val" id="total-players">-</div>
+        <div class="lbl">Players</div>
+      </div>
+      <div class="stat-chip">
+        <div class="val" id="trivia-rate">-</div>
+        <div class="lbl">Trivia Accuracy</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <div id="state-loading" class="state-box">
+        <div class="spinner"></div>
+        <span>Loading leaderboard…</span>
+      </div>
+
+      <div id="state-empty" class="state-box" style="display:none;">
+        <span style="font-size:40px;">🎮</span>
+        <span>No entries yet — be the first!</span>
+      </div>
+
+      <div id="state-error" class="state-box" style="display:none;">
+        <span style="color:#ff6b6b;">Could not load leaderboard</span>
+      </div>
+
+      <table id="lb-table" style="display:none;">
+        <thead>
+          <tr>
+            <th class="rank-col">Rank</th>
+            <th>Player</th>
+            <th class="score-col">Score</th>
+          </tr>
+        </thead>
+        <tbody id="lb-body"></tbody>
+      </table>
+    </div>
+
+    <div class="last-updated">Last updated: <span id="last-updated">–</span></div>
+  </div>
+
+  <script src="config.js"></script>
+
+  <script>
+    const API_URL = window.API_URL;
+    const REFRESH_INTERVAL = 30000;
+
+    function getMedal(rank) {
+      return rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const d = document.createElement('div');
+      d.textContent = text;
+      return d.innerHTML;
+    }
+
+    function formatTime(date) {
+      return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    function showState(name) {
+      ['loading', 'empty', 'error'].forEach(s => {
+        document.getElementById('state-' + s).style.display = s === name ? 'flex' : 'none';
+      });
+      document.getElementById('lb-table').style.display = name === 'table' ? 'table' : 'none';
+    }
+
+    async function loadLeaderboard() {
+      if (!API_URL) { showState('error'); return; }
+
+      try {
+        const res = await fetch(API_URL);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        if (data && data.error) throw new Error(data.error);
+
+        if (!Array.isArray(data) || data.length === 0) {
+          document.getElementById('total-players').textContent = '0';
+          document.getElementById('trivia-rate').textContent = '0%';
+          showState('empty');
+          return;
+        }
+
+        document.getElementById('total-players').textContent = data.length;
+        const correct = data.filter(e => e.trivia === 1).length;
+        document.getElementById('trivia-rate').textContent =
+          Math.round((correct / data.length) * 100) + '%';
+
+        document.getElementById('lb-body').innerHTML = data.map((entry, i) => {
+          const rank = entry.rank || (i + 1);
+          const medal = getMedal(rank);
+          const rankClass = rank <= 3 ? 'rank-' + rank : '';
+          const player = entry.name
+            ? `<span class="player-name">${escapeHtml(entry.name)}</span>`
+            : `<span class="player-code">${escapeHtml(entry.user_code)}</span>`;
+
+          return `<tr>
+            <td class="rank-col">
+              <span class="rank ${rankClass}">${medal || rank}</span>
+            </td>
+            <td>${player}</td>
+            <td class="score-col"><span class="score">${parseFloat(entry.score.toFixed(2))}</span></td>
+          </tr>`;
+        }).join('');
+
+        document.getElementById('last-updated').textContent = formatTime(new Date());
+        showState('table');
+
+      } catch (err) {
+        console.error(err);
+        showState('error');
+      }
+    }
+
+    showState('loading');
+    loadLeaderboard();
+    setInterval(loadLeaderboard, REFRESH_INTERVAL);
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) loadLeaderboard();
+    });
+  </script>
+</body>
+</html>
