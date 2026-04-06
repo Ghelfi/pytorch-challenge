@@ -171,7 +171,7 @@
     /* Table */
     .table-wrap {
       flex: 1;
-      overflow: hidden;
+      overflow-y: auto;
       background: rgba(255, 255, 255, 0.05);
       border-radius: 14px;
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -206,14 +206,13 @@
     tbody tr:nth-child(odd) { background: rgba(255, 255, 255, 0.02); }
 
     td {
-      padding: 0 16px;
+      padding: 12px 16px;
       vertical-align: middle;
     }
 
     .rank-col { width: 60px; }
     .score-col { width: 90px; text-align: right; }
 
-    /* Font sizes scale via --row-fs set by JS */
     #lb-table { --row-fs: 17px; }
 
     .rank {
@@ -371,22 +370,6 @@
       document.getElementById('lb-table').style.display = name === 'table' ? 'table' : 'none';
     }
 
-    function scaleRows() {
-      const table = document.getElementById('lb-table');
-      if (table.style.display === 'none') return;
-      const wrap = document.querySelector('.table-wrap');
-      const thead = table.querySelector('thead');
-      const rows = table.querySelectorAll('tbody tr');
-      if (!rows.length) return;
-
-      const available = wrap.clientHeight - thead.offsetHeight;
-      const rowH = Math.floor(available / rows.length);
-      const fs = Math.max(12, Math.min(32, rowH * 0.38));
-
-      rows.forEach(r => { r.style.height = rowH + 'px'; });
-      table.style.setProperty('--row-fs', fs + 'px');
-    }
-
     async function loadLeaderboard() {
       if (!API_URL) { showState('error'); return; }
 
@@ -427,7 +410,6 @@
 
         document.getElementById('last-updated').textContent = formatTime(new Date());
         showState('table');
-        requestAnimationFrame(scaleRows);
 
       } catch (err) {
         console.error(err);
@@ -443,9 +425,6 @@
       if (!document.hidden) loadLeaderboard();
     });
 
-    // Re-scale on any container resize (e.g. window resize, orientation change)
-    const ro = new ResizeObserver(() => scaleRows());
-    ro.observe(document.querySelector('.table-wrap'));
   </script>
 </body>
 </html>
