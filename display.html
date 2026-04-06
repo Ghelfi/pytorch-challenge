@@ -206,7 +206,7 @@
     tbody tr:nth-child(odd) { background: rgba(255, 255, 255, 0.02); }
 
     td {
-      padding: 12px 16px;
+      padding: 0 16px;
       vertical-align: middle;
     }
 
@@ -370,6 +370,22 @@
       document.getElementById('lb-table').style.display = name === 'table' ? 'table' : 'none';
     }
 
+    function scaleRows() {
+      const table = document.getElementById('lb-table');
+      if (table.style.display === 'none') return;
+      const wrap = document.querySelector('.table-wrap');
+      const thead = table.querySelector('thead');
+      const rows = table.querySelectorAll('tbody tr');
+      if (!rows.length) return;
+
+      const available = wrap.clientHeight - thead.offsetHeight;
+      const rowH = Math.floor(available / Math.max(rows.length, 10));
+      const fs = Math.max(12, Math.min(32, rowH * 0.38));
+
+      rows.forEach(r => { r.style.height = rowH + 'px'; });
+      table.style.setProperty('--row-fs', fs + 'px');
+    }
+
     async function loadLeaderboard() {
       if (!API_URL) { showState('error'); return; }
 
@@ -391,7 +407,7 @@
         document.getElementById('trivia-rate').textContent =
           Math.round((correct / data.length) * 100) + '%';
 
-        document.getElementById('lb-body').innerHTML = data.map((entry, i) => {
+        document.getElementById('lb-body').innerHTML = data.slice(0, 10).map((entry, i) => {
           const rank = entry.rank || (i + 1);
           const medal = getMedal(rank);
           const rankClass = rank <= 3 ? 'rank-' + rank : '';
@@ -410,6 +426,7 @@
 
         document.getElementById('last-updated').textContent = formatTime(new Date());
         showState('table');
+        requestAnimationFrame(scaleRows);
 
       } catch (err) {
         console.error(err);
@@ -425,6 +442,8 @@
       if (!document.hidden) loadLeaderboard();
     });
 
+    const ro = new ResizeObserver(() => scaleRows());
+    ro.observe(document.querySelector('.table-wrap'));
   </script>
 </body>
 </html>
