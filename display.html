@@ -32,7 +32,9 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 24px 20px 16px;
+      gap: 16px;
+      height: 50vh;
+      padding: 20px;
       border-bottom: 2px solid rgba(238, 76, 44, 0.4);
       flex-shrink: 0;
     }
@@ -43,44 +45,35 @@
       color: #ee4c2c;
       letter-spacing: 1px;
       text-transform: uppercase;
-      margin-bottom: 16px;
-    }
-
-    .qr-row {
-      display: flex;
-      align-items: center;
-      gap: 24px;
     }
 
     .qr-frame {
       background: white;
-      padding: 10px;
-      border-radius: 12px;
+      padding: 12px;
+      border-radius: 16px;
       flex-shrink: 0;
     }
 
     .qr-frame img {
       display: block;
-      width: 130px;
-      height: 130px;
+      width: calc(50vh - 160px);
+      height: calc(50vh - 160px);
+      min-width: 160px;
+      min-height: 160px;
     }
 
     .qr-cta {
       display: flex;
       flex-direction: column;
+      align-items: center;
       gap: 8px;
+      text-align: center;
     }
 
     .cta-headline {
       font-size: 26px;
       font-weight: 800;
       line-height: 1.2;
-    }
-
-    .cta-sub {
-      font-size: 15px;
-      color: #aaa;
-      line-height: 1.4;
     }
 
     .cta-badge {
@@ -94,7 +87,6 @@
       font-size: 13px;
       font-weight: 600;
       color: #ee4c2c;
-      width: fit-content;
     }
 
     /* ── Leaderboard Section ─────────────────────────────────── */
@@ -287,16 +279,13 @@
   <!-- QR / CTA Section -->
   <div class="qr-section">
     <div class="event-title">Helsing PyTorch Challenge</div>
-    <div class="qr-row">
-      <div class="qr-frame">
-        <img src="qr-code.png" alt="QR Code to join the challenge">
-      </div>
-      <div class="qr-cta">
-        <div class="cta-headline">Scan &amp;<br>Compete!</div>
-        <div class="cta-sub">Test your PyTorch knowledge<br>and climb the leaderboard</div>
-        <div class="cta-badge">
-          <span>🔥</span> ~1 minute challenge
-        </div>
+    <div class="qr-frame">
+      <img src="qr-code.png" alt="QR Code to join the challenge">
+    </div>
+    <div class="qr-cta">
+      <div class="cta-headline">Scan &amp; Compete!</div>
+      <div class="cta-badge">
+        <span>🔥</span> ~1 minute challenge
       </div>
     </div>
   </div>
